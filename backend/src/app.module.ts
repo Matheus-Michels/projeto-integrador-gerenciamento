@@ -1,19 +1,25 @@
 import { Module } from '@nestjs/common';
-import { createObserveModule } from '@nestjs/observe';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-
-export const { ObserveModule, ObserveInstrument } = createObserveModule();
+import { User } from './entities/user.entity';
+import { SearchHistory } from './entities/search-history.entity';
+import { GithubModule } from './github/github.module';
 
 @Module({
   imports: [
-    // Distributed tracing, auto-correlated logs, request/job metrics, error
-    // telemetry, alarms, and more — out of the box. Sign up at https://observe.nestjs.com
-    ObserveModule.forRoot({
-      appKey: 'YOUR_APP_KEY',
-      appSecret: 'YOUR_APP_SECRET',
-      serviceId: 'backend',
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: 'localhost',
+      port: 5432,
+      username: 'root',
+      password: 'root',
+      database: 'gerenciamento_atividades',
+      entities: [User, SearchHistory],
+      autoLoadEntities: true,
+      synchronize: true,
     }),
+    GithubModule,
   ],
   controllers: [AppController],
   providers: [AppService],
