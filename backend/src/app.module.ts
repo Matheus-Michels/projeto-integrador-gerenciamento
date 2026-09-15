@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { User } from './entities/user.entity';
 import { SearchHistory } from './entities/search-history.entity';
+import { GithubModule } from './github/github.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { SearchHistory } from './entities/search-history.entity';
       autoLoadEntities: true,
       synchronize: true,
     }),
+    GithubModule,
   ],
   controllers: [AppController],
   providers: [AppService],
