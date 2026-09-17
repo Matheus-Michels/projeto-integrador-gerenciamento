@@ -1,10 +1,10 @@
 # Projeto Integrador - Gerenciamento de Atividades
 
-## 💻 Sobre o Projeto
+## Sobre o Projeto
 
 Este é o backend do sistema de Gerenciamento de Atividades, desenvolvido como requisito do **Projeto Integrador**. A aplicação se conecta à API pública do GitHub para buscar e gerenciar dados de repositórios, commits e pull requests.
 
-## 🚀 Tecnologias Utilizadas
+## Tecnologias Utilizadas
 
 - **Backend:** NestJS
 - **Banco de Dados:** PostgreSQL (rodando em Docker)
@@ -12,7 +12,7 @@ Este é o backend do sistema de Gerenciamento de Atividades, desenvolvido como r
 - **Requisições HTTP:** Axios
 - **Padronização:** Git Flow e Conventional Commits
 
-## 🛠️ Como Executar Localmente
+## Como Executar Localmente
 
 ### Pré-requisitos
 
