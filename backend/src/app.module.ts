@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { User } from './entities/user.entity';
 import { SearchHistory } from './entities/search-history.entity';
 import { GithubModule } from './github/github.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { GithubModule } from './github/github.module';
       synchronize: true,
     }),
     GithubModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
