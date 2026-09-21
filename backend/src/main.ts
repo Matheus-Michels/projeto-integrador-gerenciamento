@@ -3,6 +3,7 @@ import { AppModule} from './app.module';
 import supertokens from 'supertokens-node';
 import { middleware } from 'supertokens-node/framework/express';
 import { AuthFilter } from './auth/auth.filter';
+import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
@@ -15,7 +16,7 @@ async function bootstrap() {
   });
 
   app.use(middleware());
-  app.useGlobalFilters(new AuthFilter());
+  app.useGlobalFilters(new AuthFilter(), new GlobalExceptionFilter());
 
   const config = new DocumentBuilder()
     .setTitle('API de Gerenciamento de Atividades')
