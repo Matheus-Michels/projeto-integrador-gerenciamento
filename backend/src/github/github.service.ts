@@ -35,4 +35,14 @@ export class GithubService {
       throw new HttpException('Erro ao buscar Pull Requests.', HttpStatus.BAD_REQUEST);
     }
   }
+
+  async getIssues(owner: string, repo: string) {
+    const url = `https://api.github.com/repos/${owner}/${repo}/issues`;
+    try {
+      const response = await firstValueFrom(this.httpService.get(url));
+      return response.data;
+    } catch (error) {
+      throw new HttpException('Erro ao buscar Issues.', HttpStatus.BAD_REQUEST);
+    }
+  }
 }

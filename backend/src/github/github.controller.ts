@@ -54,4 +54,9 @@ export class GithubController {
   async getPullRequests(@Param('owner') owner: string, @Param('repo') repo: string) {
     return this.githubService.getPullRequests(owner, repo);
   }
+
+  @Get(':owner/:repo/issues')
+  async getIssues(@Param('owner') owner: string, @Param('repo') repo: string) {
+    return this.githubService.getIssues(owner, repo);
+  }
 }
