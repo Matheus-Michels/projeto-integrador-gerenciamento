@@ -10,7 +10,7 @@ export class SupertokensService {
     supertokens.init({
       framework: 'express',
       supertokens: {
-        connectionURI: process.env.SUPERTOKENS_URI || 'https://localhost:3567',
+        connectionURI: process.env.SUPERTOKENS_URI || 'http://localhost:3567',
       },
       appInfo: {
         appName: 'Gerenciamento de Atividades',
