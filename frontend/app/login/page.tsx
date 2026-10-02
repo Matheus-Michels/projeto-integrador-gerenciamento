@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { initSuperTokens } from '../../config/supertokens';
+import { initSuperTokens } from '@/config/supertokens';
 import { signIn, signUp } from 'supertokens-web-js/recipe/emailpassword';
 
 export default function AuthPage() {
@@ -36,7 +36,7 @@ export default function AuthPage() {
         } else if (response.status === 'WRONG_CREDENTIALS_ERROR') {
           setError('Email ou senha incorretos.');
         } else if (response.status === 'OK') {
-          router.push('/');
+          router.push('/dashboard');
         }
       } else {
         const response = await signUp({
@@ -49,7 +49,7 @@ export default function AuthPage() {
         if (response.status === 'FIELD_ERROR') {
           setError(response.formFields[0]?.error || 'Dados inválidos para registro.');
         } else if (response.status === 'OK') {
-          router.push('/');
+          router.push('/dashboard');
         }
       }
     } catch (err: any) {
