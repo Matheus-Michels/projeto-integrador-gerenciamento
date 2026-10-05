@@ -7,38 +7,11 @@ export interface pullRequest {
   createdAt: string;
   commentsCount: number;
 }
+interface pullRequestListProps {
+  prs: pullRequest[];
+}
 
-const mockPullRequests: pullRequest[] = [
-  {
-    id: 1,
-    number: 52,
-    title: "feat: adiciona componente de abas para PRs e Issues",
-    author: "thalesdev",
-    state: "open",
-    createdAt: "há 2 horas",
-    commentsCount: 3,
-  },
-  {
-    id: 2,
-    number: 51,
-    title: "fix: corrige rotas protegidas e isolamento de layout",
-    author: "contributor1",
-    state: "merged",
-    createdAt: "ontem",
-    commentsCount: 1,
-  },
-  {
-    id: 3,
-    number: 50,
-    title: "refactor: migração para Next.js App Router",
-    author: "matheus",
-    state: "closed",
-    createdAt: "há 3 dias",
-    commentsCount: 5,
-  },
-];
-
-export default function PullRequestList() {
+export default function PullRequestList({ prs }: pullRequestListProps) {
   const getBadgeStyle = (state: pullRequest["state"]) => {
     switch (state) {
       case "open":
@@ -61,9 +34,17 @@ export default function PullRequestList() {
     }
   };
 
+  if(!prs || prs.length === 0) {
+    return (
+      <div className="p-8 text-center text-zinc-500 text-sm">
+        Nenhum pull request encontrado para este repositório.
+      </div>
+    );
+  }
+
   return (
     <div className="divide-y divide-zinc-200">
-      {mockPullRequests.map((pr) => (
+      {prs.map((pr) => (
         <div
           key={pr.id}
           className="p-4 flex items-center justify-between hover:bg-zinc-50 transition-colors duration-150"

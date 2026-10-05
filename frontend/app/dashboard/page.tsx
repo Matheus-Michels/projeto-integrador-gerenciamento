@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import ActivityTabs from "./activityTabs";
+import ContributorRanking from "./contributorRanking";
 
 export default function DashboardPage() {
   const [repoInput, setRepoInput] = useState("");
@@ -10,7 +11,6 @@ export default function DashboardPage() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (!repoInput.trim()) return;
-
     setCurrentRepo(repoInput.trim());
   };
 
@@ -58,7 +58,14 @@ export default function DashboardPage() {
               Resultados para: <span className="text-black font-bold">{currentRepo}</span>
             </p>
           </div>
-          <ActivityTabs />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+            <div className="lg:col-span-2">
+              <ActivityTabs repo={currentRepo} />
+            </div>
+            <div className="lg:col-span-1">
+              <ContributorRanking repo={currentRepo} />
+            </div>
+          </div>
         </div>
       ) : (
         <div className="bg-white border border-zinc-200 rounded-xl p-12 text-center shadow-sm">

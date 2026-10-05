@@ -9,43 +9,21 @@ export interface issue {
   commentsCount: number;
 }
 
-const mockIssues: issue[] = [
-  {
-    id: 1,
-    number: 48,
-    title: "Desenvolver Abas de Pull Requests e Issues",
-    author: "matheus-michels",
-    state: "open",
-    labels: ["frontend", "enhancement"],
-    createdAt: "há 2 dias",
-    commentsCount: 4,
-  },
-  {
-    id: 2,
-    number: 46,
-    title: "Paginação e Ordenação Dinâmica nas Tabelas",
-    author: "matheus-michels",
-    state: "open",
-    labels: ["backend", "frontend"],
-    createdAt: "há 2 dias",
-    commentsCount: 2,
-  },
-  {
-    id: 3,
-    number: 14,
-    title: "Criar ranking de contribuintes",
-    author: "matheus-michels",
-    state: "open",
-    labels: ["frontend"],
-    createdAt: "há 2 semanas",
-    commentsCount: 0,
-  },
-];
+interface issueListProps {
+  issues: issue[];
+}
 
-export default function IssueList() {
+export default function IssueList({ issues }: issueListProps) {
+  if(!issues || issues.length === 0) {
+    return (
+      <div className="p-8 text-center text-zinc-500 text-sm">
+        Nenhuma issue encontrada para este repositório.
+      </div>
+    );
+  }
   return (
     <div className="divide-y divide-zinc-200">
-      {mockIssues.map((issue) => (
+      {issues.map((issue) => (
         <div
           key={issue.id}
           className="p-4 flex items-center justify-between hover:bg-zinc-50 transition-colors duration-150"
