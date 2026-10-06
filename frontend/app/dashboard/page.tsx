@@ -1,18 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ActivityTabs from "./activityTabs";
 import ContributorRanking from "./contributorRanking";
+import FavoriteButton from './FavoriteButton';
 
 export default function DashboardPage() {
   const [repoInput, setRepoInput] = useState("");
   const [currentRepo, setCurrentRepo] = useState<string | null>(null);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const queryRepo = params.get('repo');
+    if (queryRepo) {
+      setCurrentRepo(queryRepo);
+      setRepoInput(queryRepo);
+    }
+  }, []);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (!repoInput.trim()) return;
+    
+    window.history.pushState({}, '', `/dashboard?repo=${repoInput.trim()}`);
     setCurrentRepo(repoInput.trim());
   };
+
+  const [owner, repo] = currentRepo ? currentRepo.split('/') : ["", ""];
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -55,8 +69,9 @@ export default function DashboardPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between px-1">
             <p className="text-xs uppercase tracking-wider font-semibold text-zinc-500">
-              Resultados para: <span className="text-black font-bold">{currentRepo}</span>
+              Resultados para:  <span className="text-black font-bold">{currentRepo}</span>
             </p>
+            <FavoriteButton owner={owner} repo={repo} />
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
             <div className="lg:col-span-2">
