@@ -6,6 +6,8 @@ import { User } from './entities/user.entity';
 import { SearchHistory } from './entities/search-history.entity';
 import { GithubModule } from './github/github.module';
 import { AuthModule } from './auth/auth.module';
+import { FavoriteRepository } from './entities/favorite-repository.entity';
+import { FavoritesModule } from './favorites/favorites.module';
 
 @Module({
   imports: [
@@ -16,12 +18,13 @@ import { AuthModule } from './auth/auth.module';
       username: 'root',
       password: 'root',
       database: 'gerenciamento_atividades',
-      entities: [User, SearchHistory],
+      entities: [User, SearchHistory, FavoriteRepository],
       autoLoadEntities: true,
       synchronize: true,
     }),
     GithubModule,
     AuthModule,
+    FavoritesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
