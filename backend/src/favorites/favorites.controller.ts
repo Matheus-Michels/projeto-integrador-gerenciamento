@@ -23,4 +23,12 @@ export class FavoritesController {
   async removeFavorite(@Param('id') id: string) {
     return this.favoritesService.removeFavorite(id);
   }
+
+  @Delete(':owner/:repo')
+  async removeFavoriteByRepo(
+    @Param('owner') owner: string,
+    @Param('repo') repo: string,
+  ) {
+    return this.favoritesService.removeFavoriteByRepo(owner, repo);
+  }
 }
