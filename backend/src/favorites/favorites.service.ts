@@ -45,4 +45,11 @@ export class FavoritesService {
   async removeFavorite(id: string) {
     await this.favoriteRepo.delete(id);
   }
+
+  async removeFavoriteByRepo(owner: string, repo: string) {
+    const user = await this.userRepo.createQueryBuilder().getOne();
+    if (user) {
+      await this.favoriteRepo.delete({ owner, repo, user: { id: user.id } });
+    }
+  }
 }

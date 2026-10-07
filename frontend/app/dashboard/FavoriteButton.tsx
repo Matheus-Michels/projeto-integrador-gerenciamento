@@ -1,11 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export default function FavoriteButton({ owner, repo }: { owner: string; repo: string }) {
   const [isFavorited, setIsFavorited] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    const checkFavoriteStatus = async () => {
+      try {
+        const userToken = localStorage.getItem('userToken');
+        if (!userToken) return;
+
+        const res = await fetch(`http://localhost:3000/favorites/${userToken}`);
+        if (res.ok) {
+          const favorites = await res.json();
+          const isSaved = favorites.some((fav: any) => fav.owner === owner && fav.repo === repo);
+          setIsFavorited(isSaved);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    if (owner && repo) {
+      checkFavoriteStatus();
+    }
+  }, [owner, repo]);
 
   const toggleFavorite = async () => {
     try {
@@ -38,7 +60,14 @@ export default function FavoriteButton({ owner, repo }: { owner: string; repo: s
           console.error('Erro no servidor ao tentar salvar o favorito.');
         }
       } else {
-        setIsFavorited(false);
+        const res = await fetch(`http://localhost:3000/favorites/${owner}/${repo}`, {
+          method: 'DELETE',
+        });
+
+        if (res.ok) {
+          setIsFavorited(false);
+          router.refresh();
+        }
       }
     } catch (error) {
       console.error(error);
