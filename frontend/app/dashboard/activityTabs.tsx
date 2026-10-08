@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import PullRequestList, { pullRequest } from "./pullRequestList";
 import IssueList, { issue } from "./issueList";
+import Toast from "./toast";
+import Spinner from "./spinner";
 
 type TabType = "prs" | "issues";
 
@@ -74,55 +76,54 @@ export default function ActivityTabs({ repo }: ActivityTabsProps) {
   if (loading) {
     return (
       <div className="bg-white border border-zinc-200 rounded-xl p-10 text-center text-zinc-500 shadow-sm animate-pulse">
-        Carregando atividades de <span className="font-semibold text-black">{repo}</span>...
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6 shadow-sm">
-        <p className="font-semibold">Erro ao carregar dados</p>
-        <p className="text-sm mt-1">{error}</p>
+        <Spinner size="lg" />
+        <p className="text-sm">
+          Carregando atividades de{" "} 
+          <span className="font-semibold text-black">{repo}</span>...
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white border border-zinc-200 rounded-xl shadow-sm overflow-hidden">
-      <div className="flex border-b border-zinc-200 bg-zinc-50 px-4 pt-2">
-        <button
-          onClick={() => setActiveTab("prs")}
-          className={`py-3 px-5 text-sm font-semibold border-b-2 transition-all duration-150 flex items-center gap-2 cursor-pointer ${
-            activeTab === "prs"
-              ? "border-black text-black bg-white rounded-t-lg border-t border-l border-r -mb-px"
-              : "border-transparent text-zinc-500 hover:text-black"
-          }`}
-        >
-          <span>Pull Requests</span>
-          <span className="bg-zinc-200 text-zinc-700 text-xs px-2 py-0.5 rounded-full font-medium">
-            {prs.length}
-          </span>
-        </button>
+    <>
+      {error && <Toast message={error} type="error" onClose={() => setError(null)} />}
 
-        <button
-          onClick={() => setActiveTab("issues")}
-          className={`py-3 px-5 text-sm font-semibold border-b-2 transition-all duration-150 flex items-center gap-2 cursor-pointer ${
-            activeTab === "issues"
-              ? "border-black text-black bg-white rounded-t-lg border-t border-l border-r -mb-px"
-              : "border-transparent text-zinc-500 hover:text-black"
-          }`}
-        >
-          <span>Issues</span>
-          <span className="bg-zinc-200 text-zinc-700 text-xs px-2 py-0.5 rounded-full font-medium">
-            {issues.length}
-          </span>
-        </button>
-      </div>
+      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm overflow-hidden">
+        <div className="flex border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/40 px-4 pt-2">
+          <button
+            onClick={() => setActiveTab("prs")}
+            className={`py-3 px-5 text-sm font-semibold border-b-2 transition-all duration-150 flex items-center gap-2 cursor-pointer ${
+              activeTab === "prs"
+                ? "border-black dark:border-white text-black dark:text-white bg-white dark:bg-zinc-900 rounded-t-lg border-t border-l border-r border-zinc-200 dark:border-zinc-800 -mb-px"
+                : "border-transparent text-zinc-500 dark:text-zinc-400 hover:text-black dark:hover:text-white"
+            }`}
+          >
+            <span>Pull Requests</span>
+            <span className="bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs px-2 py-0.5 rounded-full font-medium">
+              {prs.length}
+            </span>
+          </button>
 
-      <div>
-        {activeTab === "prs" ? <PullRequestList prs={prs} /> : <IssueList issues={issues} /> }
+          <button
+            onClick={() => setActiveTab("issues")}
+            className={`py-3 px-5 text-sm font-semibold border-b-2 transition-all duration-150 flex items-center gap-2 cursor-pointer ${
+              activeTab === "issues"
+                ? "border-black dark:border-white text-black dark:text-white bg-white dark:bg-zinc-900 rounded-t-lg border-t border-l border-r border-zinc-200 dark:border-zinc-800 -mb-px"
+                : "border-transparent text-zinc-500 dark:text-zinc-400 hover:text-black dark:hover:text-white"
+            }`}
+          >
+            <span>Issues</span>
+            <span className="bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs px-2 py-0.5 rounded-full font-medium">
+              {issues.length}
+            </span>
+          </button>
+        </div>
+
+        <div>
+          {activeTab === "prs" ? <PullRequestList prs={prs} /> : <IssueList issues={issues} />}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
