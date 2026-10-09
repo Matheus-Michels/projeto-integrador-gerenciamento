@@ -16,10 +16,12 @@ export class GithubService {
     }
   }
 
-  async getCommits(owner: string, repo: string) {
+  async getCommits(owner: string, repo: string, since?: string, until?: string) {
     const url = `https://api.github.com/repos/${owner}/${repo}/commits`;
     try {
-      const response = await firstValueFrom(this.httpService.get(url));
+      const response = await firstValueFrom(this.httpService.get(url, {
+        params: { since, until }
+      }));
       return response.data;
     } catch (error) {
       throw new HttpException('Erro ao buscar commits.', HttpStatus.BAD_REQUEST);
@@ -36,10 +38,12 @@ export class GithubService {
     }
   }
 
-  async getIssues(owner: string, repo: string) {
+  async getIssues(owner: string, repo: string, since?: string) {
     const url = `https://api.github.com/repos/${owner}/${repo}/issues`;
     try {
-      const response = await firstValueFrom(this.httpService.get(url));
+      const response = await firstValueFrom(this.httpService.get(url, {
+        params: { since }
+      }));
       return response.data;
     } catch (error) {
       throw new HttpException('Erro ao buscar Issues.', HttpStatus.BAD_REQUEST);
