@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import ActivityTabs from "./activityTabs";
 import ContributorRanking from "./contributorRanking";
 import FavoriteButton from "./FavoriteButton";
+import RepoComparison from "./repoComparison";
 
 export default function DashboardPage() {
   const searchParams = useSearchParams();
@@ -12,6 +13,7 @@ export default function DashboardPage() {
   
   const [repoInput, setRepoInput] = useState("");
   const [currentRepo, setCurrentRepo] = useState<string | null>(null);
+  const [isComparing, setIsComparing] = useState(false);
 
   useEffect(() => {
     const queryRepo = searchParams.get("repo");
@@ -29,6 +31,17 @@ export default function DashboardPage() {
   };
 
   const [owner, repo] = currentRepo ? currentRepo.split("/") : ["", ""];
+
+  if (isComparing) {
+    return (
+      <div className="max-w-7xl mx-auto">
+        <RepoComparison
+          initialRepoA={currentRepo || ""}
+          onBack={() => setIsComparing(false)}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -76,6 +89,16 @@ export default function DashboardPage() {
             <p className="text-xs uppercase tracking-wider font-semibold text-zinc-500 dark:text-zinc-400">
               Resultados para: <span className="text-black dark:text-white font-bold">{currentRepo}</span>
             </p>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsComparing(true)}
+                className="px-4 py-2 border border-zinc-300 dark:border-zinc-700 text-xs font-semibold rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition flex items-center gap-1.5 cursor-pointer text-black dark:text-white"
+              >
+                <span>⇄</span>
+                Comparar Repositórios
+              </button>
+            </div>
             <FavoriteButton owner={owner} repo={repo} />
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
