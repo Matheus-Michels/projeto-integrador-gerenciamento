@@ -1,53 +1,23 @@
-import { Controller, Get, Param } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { GithubService } from './github.service';
 
-@ApiTags('github')
 @Controller('github')
 export class GithubController {
   constructor(private readonly githubService: GithubService) {}
 
   @Get(':owner/:repo')
-  @ApiOperation({
-    summary: 'Busca informações de um repositório no GitHub',
-    description: 'Consulta os dados públicos de um repositório a partir do proprietário e do nome do repositório.',
-  })
-  @ApiParam({
-    name: 'owner',
-    description: 'Nome de usuário ou organização proprietária no GitHub',
-    example: 'octocat',
-  })
-  @ApiParam({
-    name: 'repo',
-    description: 'Nome do repositório',
-    example: 'Hello-World',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Dados do repositório obtidos com sucesso.',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Repositório não encontrado no GitHub.',
-  })
-  @ApiResponse({
-    status: 429,
-    description: 'Limite de requisições excedido na API do GitHub.',
-  })
-  @ApiResponse({
-    status: 500,
-    description: 'Erro interno ao processar a requisição.',
-  })
-  async getRepository(
-    @Param('owner') owner: string,
-    @Param('repo') repo: string,
-  ) {
+  async getRepository(@Param('owner') owner: string, @Param('repo') repo: string) {
     return this.githubService.getRepository(owner, repo);
   }
 
   @Get(':owner/:repo/commits')
-  async getCommits(@Param('owner') owner: string, @Param('repo') repo: string) {
-    return this.githubService.getCommits(owner, repo);
+  async getCommits(
+    @Param('owner') owner: string, 
+    @Param('repo') repo: string,
+    @Query('since') since?: string,
+    @Query('until') until?: string
+  ) {
+    return this.githubService.getCommits(owner, repo, since, until);
   }
 
   @Get(':owner/:repo/pulls')
@@ -56,7 +26,11 @@ export class GithubController {
   }
 
   @Get(':owner/:repo/issues')
-  async getIssues(@Param('owner') owner: string, @Param('repo') repo: string) {
-    return this.githubService.getIssues(owner, repo);
+  async getIssues(
+    @Param('owner') owner: string, 
+    @Param('repo') repo: string,
+    @Query('since') since?: string
+  ) {
+    return this.githubService.getIssues(owner, repo, since);
   }
 }
