@@ -1,29 +1,31 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import ActivityTabs from "./activityTabs";
 import ContributorRanking from "./contributorRanking";
 import FavoriteButton from "./FavoriteButton";
 
 export default function DashboardPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  
   const [repoInput, setRepoInput] = useState("");
   const [currentRepo, setCurrentRepo] = useState<string | null>(null);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const queryRepo = params.get("repo");
+    const queryRepo = searchParams.get("repo");
     if (queryRepo) {
       setCurrentRepo(queryRepo);
       setRepoInput(queryRepo);
     }
-  }, []);
+  }, [searchParams]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (!repoInput.trim()) return;
 
-    window.history.pushState({}, "", `/dashboard?repo=${repoInput.trim()}`);
-    setCurrentRepo(repoInput.trim());
+    router.push(`/dashboard?repo=${repoInput.trim()}`);
   };
 
   const [owner, repo] = currentRepo ? currentRepo.split("/") : ["", ""];
