@@ -14,9 +14,12 @@ export interface Contributor {
 
 interface ContributorRankingProps {
   repo: string;
+  since?: string | null;
+  until?: string | null;
+  author?: string | null;
 }
 
-export default function ContributorRanking({ repo }: ContributorRankingProps) {
+export default function ContributorRanking({ repo, since, until, author }: ContributorRankingProps) {
   const [contributors, setContributors] = useState<Contributor[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -27,9 +30,23 @@ export default function ContributorRanking({ repo }: ContributorRankingProps) {
       setError(null);
 
       try {
-        const res = await fetch(
-          `https://api.github.com/repos/${repo}/contributors?per_page=10`
-        );
+        let url = `https://api.github.com/repos/${repo}/contributors?per_page=10`;
+        
+        const queryParams = new URLSearchParams();
+        if (since) queryParams.append("since", since);
+        if (until) queryParams.append("until", until);
+        if (author) queryParams.append("author", author);
+
+        const queryString = queryParams.toString();
+        if (queryString) {
+          url += `&${queryString}`;
+        }
+
+        const res = await fetch(url, {
+  headers: {
+    Authorization: `Bearer ${process.env.NEXT_PUBLIC_GITHUB_TOKEN}`
+  }
+});
 
         if (!res.ok) {
           throw new Error("Não foi possível carregar o ranking de colaboradores.");
@@ -47,7 +64,7 @@ export default function ContributorRanking({ repo }: ContributorRankingProps) {
     if (repo) {
       fetchContributors();
     }
-  }, [repo]);
+  }, [repo, since, until, author]);
 
   const getMedalBadge = (position: number) => {
     switch (position) {

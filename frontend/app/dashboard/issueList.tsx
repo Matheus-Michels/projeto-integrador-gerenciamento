@@ -51,6 +51,7 @@ export default function IssueList({ issues }: issueListProps) {
   }, [issues, sortField, sortOrder]);
 
   const totalPages = Math.ceil(sortedIssues.length / itemsPerPage) || 1;
+  
   const paginatedIssues = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     return sortedIssues.slice(start, start + itemsPerPage);
@@ -63,6 +64,7 @@ export default function IssueList({ issues }: issueListProps) {
       </div>
     );
   }
+
   return (
     <div>
       <div className="p-3 bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-3 text-xs">
@@ -106,50 +108,50 @@ export default function IssueList({ issues }: issueListProps) {
         </div>
       </div>
 
-    <div className="divide-y divide-zinc-200">
-      {issues.map((issue) => (
-        <div
-          key={issue.id}
-          className="p-4 flex items-center justify-between hover:bg-zinc-50 transition-colors duration-150"
-        >
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span
-                className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${
-                  issue.state === "open"
-                    ? "bg-emerald-100 text-emerald-800 border-emerald-200"
-                    : "bg-zinc-100 text-zinc-700 border-zinc-200"
-                }`}
-              >
-                {issue.state === "open" ? "Aberta" : "Fechada"}
-              </span>
-              <span className="font-medium text-black tracking-tight text-sm md:text-base">
-                {issue.title}
-              </span>
-              <span className="text-xs text-zinc-400">#{issue.number}</span>
-
-              {issue.labels.map((label) => (
+      <div className="divide-y divide-zinc-200">
+        {paginatedIssues.map((issue) => (
+          <div
+            key={issue.id}
+            className="p-4 flex items-center justify-between hover:bg-zinc-50 transition-colors duration-150"
+          >
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span
-                  key={label}
-                  className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-600 border border-zinc-200"
+                  className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${
+                    issue.state === "open"
+                      ? "bg-emerald-100 text-emerald-800 border-emerald-200"
+                      : "bg-zinc-100 text-zinc-700 border-zinc-200"
+                  }`}
                 >
-                  {label}
+                  {issue.state === "open" ? "Aberta" : "Fechada"}
                 </span>
-              ))}
+                <span className="font-medium text-black tracking-tight text-sm md:text-base">
+                  {issue.title}
+                </span>
+                <span className="text-xs text-zinc-400">#{issue.number}</span>
+
+                {issue.labels.map((label) => (
+                  <span
+                    key={label}
+                    className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-600 border border-zinc-200"
+                  >
+                    {label}
+                  </span>
+                ))}
+              </div>
+              <p className="text-xs text-zinc-500">
+                Aberta por <span className="font-medium text-zinc-700">{issue.author}</span> • {issue.createdAt}
+              </p>
             </div>
-            <p className="text-xs text-zinc-500">
-              Aberta por <span className="font-medium text-zinc-700">{issue.author}</span> • {issue.createdAt}
-            </p>
-          </div>
 
-          <div className="flex items-center text-xs text-zinc-400">
-            💬 {issue.commentsCount}
+            <div className="flex items-center text-xs text-zinc-400">
+              💬 {issue.commentsCount}
+            </div>
           </div>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
 
-    <div className="p-4 bg-zinc-50 dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs">
+      <div className="p-4 bg-zinc-50 dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs">
         <span className="text-zinc-500 dark:text-zinc-400">
           Página <strong className="text-black dark:text-white">{currentPage}</strong> de{" "}
           <strong className="text-black dark:text-white">{totalPages}</strong> (

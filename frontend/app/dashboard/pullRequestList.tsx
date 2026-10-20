@@ -7,17 +7,19 @@ export interface pullRequest {
   number: number;
   title: string;
   author: string;
-  state: "open" | "closed" | "merged";
+  state: string;
   createdAt: string;
   commentsCount: number;
 }
-interface pullRequestListProps {
+
+interface PullRequestListProps {
   prs: pullRequest[];
 }
+
 type SortField = "date" | "author" | "comments";
 type SortOrder = "asc" | "desc";
 
-export default function PullRequestList({ prs }: pullRequestListProps) {
+export default function PullRequestList({ prs }: PullRequestListProps) {
   const [sortField, setSortField] = useState<SortField>("date");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
   const [currentPage, setCurrentPage] = useState(1);
@@ -36,7 +38,7 @@ export default function PullRequestList({ prs }: pullRequestListProps) {
   const sortedPrs = useMemo(() => {
     return [...prs].sort((a, b) => {
       let comparison = 0;
-      if (sortField == "date") {
+      if (sortField === "date") {
         comparison = a.number - b.number;
       } else if (sortField === "author") {
         comparison = a.author.localeCompare(b.author);
@@ -45,38 +47,16 @@ export default function PullRequestList({ prs }: pullRequestListProps) {
       }
       return sortOrder === "asc" ? comparison : -comparison;
     });
-  }, [prs, sortField, sortOrder]); 
+  }, [prs, sortField, sortOrder]);
 
   const totalPages = Math.ceil(sortedPrs.length / itemsPerPage) || 1;
+  
   const paginatedPrs = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     return sortedPrs.slice(start, start + itemsPerPage);
   }, [sortedPrs, currentPage]);
 
-
-  const getBadgeStyle = (state: pullRequest["state"]) => {
-    switch (state) {
-      case "open":
-        return "bg-emerald-100 text-emerald-800 border-emerald-200";
-      case "merged":
-        return "bg-purple-100 text-purple-800 border-purple-200";
-      case "closed":
-        return "bg-zinc-100 text-zinc-700 border-zinc-200";
-    }
-  };
-
-  const getBadgeLabel = (state: pullRequest["state"]) => {
-    switch (state) {
-      case "open":
-        return "Aberto";
-      case "merged":
-        return "Merged";
-      case "closed":
-        return "Fechado";
-    }
-  };
-
-  if(!prs || prs.length === 0) {
+  if (!prs || prs.length === 0) {
     return (
       <div className="p-8 text-center text-zinc-500 text-sm">
         Nenhum pull request encontrado para este repositório.
@@ -86,7 +66,6 @@ export default function PullRequestList({ prs }: pullRequestListProps) {
 
   return (
     <div>
-      {/* Barra de Ordenação */}
       <div className="p-3 bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-3 text-xs">
         <span className="font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
           Ordenar por:
@@ -101,7 +80,7 @@ export default function PullRequestList({ prs }: pullRequestListProps) {
                 : "border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800"
             }`}
           >
-            Data {sortField === "date" && (sortOrder === "asc" ? "↑" : "↓")}
+            Data / Número {sortField === "date" && (sortOrder === "asc" ? "↑" : "↓")}
           </button>
           <button
             type="button"
@@ -127,32 +106,33 @@ export default function PullRequestList({ prs }: pullRequestListProps) {
           </button>
         </div>
       </div>
-    <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
+
+      <div className="divide-y divide-zinc-200">
         {paginatedPrs.map((pr) => (
           <div
             key={pr.id}
-            className="p-4 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors duration-150"
+            className="p-4 flex items-center justify-between hover:bg-zinc-50 transition-colors duration-150"
           >
             <div className="space-y-1">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span
-                  className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${getBadgeStyle(
-                    pr.state
-                  )}`}
+                  className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${
+                    pr.state === "merged"
+                      ? "bg-purple-100 text-purple-800 border-purple-200"
+                      : pr.state === "open"
+                      ? "bg-emerald-100 text-emerald-800 border-emerald-200"
+                      : "bg-zinc-100 text-zinc-700 border-zinc-200"
+                  }`}
                 >
-                  {getBadgeLabel(pr.state)}
+                  {pr.state === "merged" ? "Merged" : pr.state === "open" ? "Aberto" : "Fechado"}
                 </span>
-                <span className="font-medium text-black dark:text-white tracking-tight text-sm md:text-base">
+                <span className="font-medium text-black tracking-tight text-sm md:text-base">
                   {pr.title}
                 </span>
                 <span className="text-xs text-zinc-400">#{pr.number}</span>
               </div>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                Aberto por{" "}
-                <span className="font-medium text-zinc-700 dark:text-zinc-300">
-                  {pr.author}
-                </span>{" "}
-                • {pr.createdAt}
+              <p className="text-xs text-zinc-500">
+                Aberto por <span className="font-medium text-zinc-700">{pr.author}</span> • {pr.createdAt}
               </p>
             </div>
 
@@ -162,6 +142,7 @@ export default function PullRequestList({ prs }: pullRequestListProps) {
           </div>
         ))}
       </div>
+
       <div className="p-4 bg-zinc-50 dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs">
         <span className="text-zinc-500 dark:text-zinc-400">
           Página <strong className="text-black dark:text-white">{currentPage}</strong> de{" "}
