@@ -5,47 +5,86 @@ import { useSearchParams, useRouter } from "next/navigation";
 import ActivityTabs from "./activityTabs";
 import ContributorRanking from "./contributorRanking";
 import FavoriteButton from "./FavoriteButton";
-import RepoComparison from "./repoComparison";
 
 export default function DashboardPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   
+  // Estados dos inputs
   const [repoInput, setRepoInput] = useState("");
+  const [sinceInput, setSinceInput] = useState("");
+  const [untilInput, setUntilInput] = useState("");
+  const [authorInput, setAuthorInput] = useState("");
+
+  // Estados dos dados atuais carregados na URL
   const [currentRepo, setCurrentRepo] = useState<string | null>(null);
-  const [isComparing, setIsComparing] = useState(false);
+  const [currentSince, setCurrentSince] = useState<string | null>(null);
+  const [currentUntil, setCurrentUntil] = useState<string | null>(null);
+  const [currentAuthor, setCurrentAuthor] = useState<string | null>(null);
 
   useEffect(() => {
     const queryRepo = searchParams.get("repo");
+    const querySince = searchParams.get("since");
+    const queryUntil = searchParams.get("until");
+    const queryAuthor = searchParams.get("author");
+
     if (queryRepo) {
       setCurrentRepo(queryRepo);
       setRepoInput(queryRepo);
+    } else {
+      setCurrentRepo(null);
+    }
+
+    if (querySince) {
+      setCurrentSince(querySince);
+      setSinceInput(querySince);
+    } else {
+      setCurrentSince(null);
+      setSinceInput("");
+    }
+
+    if (queryUntil) {
+      setCurrentUntil(queryUntil);
+      setUntilInput(queryUntil);
+    } else {
+      setCurrentUntil(null);
+      setUntilInput("");
+    }
+
+    if (queryAuthor) {
+      setCurrentAuthor(queryAuthor);
+      setAuthorInput(queryAuthor);
+    } else {
+      setCurrentAuthor(null);
+      setAuthorInput("");
     }
   }, [searchParams]);
 
-  const handleSearch = (e: React.FormEvent) => {
+  // Função para buscar um novo repositório (limpa os filtros antigos)
+  const handleRepoSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (!repoInput.trim()) return;
 
     router.push(`/dashboard?repo=${repoInput.trim()}`);
   };
 
-  const [owner, repo] = currentRepo ? currentRepo.split("/") : ["", ""];
+  // Função para aplicar filtros no repositório que já está selecionado
+  const handleFilterSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentRepo) return;
 
-  if (isComparing) {
-    return (
-      <div className="max-w-7xl mx-auto">
-        <RepoComparison
-          initialRepoA={currentRepo || ""}
-          onBack={() => setIsComparing(false)}
-        />
-      </div>
-    );
-  }
+    let url = `/dashboard?repo=${currentRepo}`;
+    if (sinceInput) url += `&since=${sinceInput}`;
+    if (untilInput) url += `&until=${untilInput}`;
+    if (authorInput.trim()) url += `&author=${authorInput.trim()}`;
+
+    router.push(url);
+  };
+
+  const [owner, repo] = currentRepo ? currentRepo.split("/") : ["", ""];
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      {/* Bloco de Boas-Vindas */}
       <div className="bg-white dark:bg-zinc-900 p-8 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl transition-colors duration-200">
         <h1 className="text-3xl font-black uppercase tracking-tighter text-black dark:text-white">
           Visão Geral
@@ -55,11 +94,10 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {/* Formulário de Busca */}
       <div className="bg-white dark:bg-zinc-900 p-6 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl transition-colors duration-200">
         <form
-          onSubmit={handleSearch}
-          className="bg-zinc-50 dark:bg-zinc-800/40 border-2 border-zinc-200 dark:border-zinc-700 p-6 flex flex-col md:flex-row items-center justify-between gap-4 border-dashed rounded-lg"
+          onSubmit={handleRepoSearch}
+          className="bg-zinc-50 dark:bg-zinc-800/40 border-2 border-zinc-200 dark:border-zinc-700 p-6 flex flex-col md:flex-row items-end justify-between gap-4 border-dashed rounded-lg"
         >
           <div className="flex-1 w-full">
             <label className="block text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
@@ -73,6 +111,7 @@ export default function DashboardPage() {
               className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg px-4 py-2.5 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
             />
           </div>
+
           <button
             type="submit"
             className="w-full md:w-auto px-6 py-2.5 bg-black dark:bg-white text-white dark:text-black text-sm font-semibold rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200 transition cursor-pointer mt-auto self-end"
@@ -82,31 +121,73 @@ export default function DashboardPage() {
         </form>
       </div>
 
-      {/* Exibição condicional dos dados */}
       {currentRepo ? (
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div className="flex items-center justify-between px-1">
             <p className="text-xs uppercase tracking-wider font-semibold text-zinc-500 dark:text-zinc-400">
               Resultados para: <span className="text-black dark:text-white font-bold">{currentRepo}</span>
             </p>
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setIsComparing(true)}
-                className="px-4 py-2 border border-zinc-300 dark:border-zinc-700 text-xs font-semibold rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition flex items-center gap-1.5 cursor-pointer text-black dark:text-white"
-              >
-                <span>⇄</span>
-                Comparar Repositórios
-              </button>
-            </div>
             <FavoriteButton owner={owner} repo={repo} />
           </div>
+
+          {/* Painel de Filtros Exclusivo do Repositório Selecionado */}
+          <div className="bg-white dark:bg-zinc-900 p-6 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl transition-colors duration-200">
+            <form
+              onSubmit={handleFilterSearch}
+              className="flex flex-col md:flex-row items-end gap-4"
+            >
+              <div className="flex-1 w-full">
+                <label className="block text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
+                  Autor (Opcional)
+                </label>
+                <input
+                  type="text"
+                  value={authorInput}
+                  onChange={(e) => setAuthorInput(e.target.value)}
+                  placeholder="Nome do usuário"
+                  className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg px-4 py-2.5 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                />
+              </div>
+
+              <div className="w-full md:w-48">
+                <label className="block text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
+                  Data Inicial
+                </label>
+                <input
+                  type="date"
+                  value={sinceInput}
+                  onChange={(e) => setSinceInput(e.target.value)}
+                  className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg px-4 py-2.5 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                />
+              </div>
+
+              <div className="w-full md:w-48">
+                <label className="block text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
+                  Data Final
+                </label>
+                <input
+                  type="date"
+                  value={untilInput}
+                  onChange={(e) => setUntilInput(e.target.value)}
+                  className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg px-4 py-2.5 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full md:w-auto px-6 py-2.5 bg-zinc-800 dark:bg-zinc-200 text-white dark:text-black text-sm font-semibold rounded-lg hover:bg-black dark:hover:bg-white transition cursor-pointer mt-auto"
+              >
+                Filtrar
+              </button>
+            </form>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
             <div className="lg:col-span-2">
-              <ActivityTabs repo={currentRepo} />
+              <ActivityTabs repo={currentRepo} since={currentSince} until={currentUntil} author={currentAuthor} />
             </div>
             <div className="lg:col-span-1">
-              <ContributorRanking repo={currentRepo} />
+              <ContributorRanking repo={currentRepo} since={currentSince} until={currentUntil} author={currentAuthor} />
             </div>
           </div>
         </div>

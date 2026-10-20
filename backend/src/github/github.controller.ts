@@ -20,17 +20,25 @@ export class GithubController {
     return this.githubService.getCommits(owner, repo, since, until);
   }
 
-  @Get(':owner/:repo/pulls')
-  async getPullRequests(@Param('owner') owner: string, @Param('repo') repo: string) {
-    return this.githubService.getPullRequests(owner, repo);
+@Get(':owner/:repo/pulls')
+  async getPullRequests(
+    @Param('owner') owner: string, 
+    @Param('repo') repo: string,
+    @Query('since') since?: string,
+    @Query('until') until?: string,
+    @Query('author') author?: string
+  ) {
+    return this.githubService.getPullRequests(owner, repo, since, until, author);
   }
 
   @Get(':owner/:repo/issues')
   async getIssues(
     @Param('owner') owner: string, 
     @Param('repo') repo: string,
-    @Query('since') since?: string
+    @Query('since') since?: string,
+    @Query('until') until?: string,
+    @Query('author') author?: string
   ) {
-    return this.githubService.getIssues(owner, repo, since);
+    return this.githubService.getIssues(owner, repo, since, until, author);
   }
 }

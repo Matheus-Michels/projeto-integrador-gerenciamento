@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import PullRequestList, { pullRequest } from "./pullRequestList";
 import IssueList, { issue } from "./issueList";
@@ -9,9 +10,12 @@ type TabType = "prs" | "issues";
 
 interface ActivityTabsProps {
   repo: string;
+  since?: string | null;
+  until?: string | null;
+  author?: string | null;
 }
 
-export default function ActivityTabs({ repo }: ActivityTabsProps) {
+export default function ActivityTabs({ repo, since, until, author }: ActivityTabsProps) {
   const [activeTab, setActiveTab] = useState<TabType>("prs");
   const [prs, setPrs] = useState<pullRequest[]>([]);
   const [issues, setIssues] = useState<issue[]>([]);
@@ -24,9 +28,23 @@ export default function ActivityTabs({ repo }: ActivityTabsProps) {
       setError(null);
 
       try {
+        let pullsUrl = `http://localhost:3000/github/${repo}/pulls`;
+        let issuesUrl = `http://localhost:3000/github/${repo}/issues`;
+
+        const queryParams = new URLSearchParams();
+        if (since) queryParams.append("since", since);
+        if (until) queryParams.append("until", until);
+        if (author) queryParams.append("author", author);
+
+        const queryString = queryParams.toString();
+        if (queryString) {
+          pullsUrl += `?${queryString}`;
+          issuesUrl += `?${queryString}`;
+        }
+
         const [prsRes, issuesRes] = await Promise.all([
-          fetch(`https://api.github.com/repos/${repo}/pulls?state=all&per_page=100`),
-          fetch(`https://api.github.com/repos/${repo}/issues?state=all&per_page=100`)
+          fetch(pullsUrl),
+          fetch(issuesUrl)
         ]);
 
         if (!prsRes.ok || !issuesRes.ok) {
@@ -36,7 +54,7 @@ export default function ActivityTabs({ repo }: ActivityTabsProps) {
         const prsData = await prsRes.json();
         const issuesData = await issuesRes.json();
 
-        const formattedPrs: pullRequest[] = prsData.map((pr: any) => ({
+        let formattedPrs: pullRequest[] = prsData.map((pr: any) => ({
           id: pr.id,
           number: pr.number,
           title: pr.title,
@@ -46,7 +64,7 @@ export default function ActivityTabs({ repo }: ActivityTabsProps) {
           commentsCount: pr.comments || 0,
         }));
 
-        const formattedIssues: issue[] = issuesData
+        let formattedIssues: issue[] = issuesData
           .filter((item: any) => !item.pull_request)
           .map((item: any) => ({
             id: item.id,
@@ -71,7 +89,7 @@ export default function ActivityTabs({ repo }: ActivityTabsProps) {
     if (repo) {
       fetchData();
     }
-  }, [repo]);
+  }, [repo, since, until, author]);
 
   if (loading) {
     return (
