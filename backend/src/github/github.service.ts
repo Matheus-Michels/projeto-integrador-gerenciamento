@@ -8,10 +8,6 @@ import { User } from '../entities/user.entity';
 
 @Injectable()
 export class GithubService {
-  private readonly headers = { 
-  Authorization: `Bearer ${process.env.GITHUB_TOKEN}` 
-};
-
   constructor(
     private readonly httpService: HttpService,
     @InjectRepository(SearchHistory)
@@ -20,12 +16,21 @@ export class GithubService {
     private userRepo: Repository<User>,
   ) {}
 
+  // Função auxiliar para buscar o header dinamicamente no momento da requisição
+  private getHeaders() {
+    const token = process.env.GITHUB_TOKEN;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }
+
   async getRepository(owner: string, repo: string) {
     const url = `https://api.github.com/repos/${owner}/${repo}`;
     try {
-      const response = await firstValueFrom(this.httpService.get(url, { headers: this.headers }));
+      const response = await firstValueFrom(
+        this.httpService.get(url, { headers: this.getHeaders() })
+      );
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Erro getRepository:', error.response?.data || error.message);
       throw new HttpException('Erro ao buscar o repositório.', HttpStatus.BAD_REQUEST);
     }
   }
@@ -46,12 +51,15 @@ export class GithubService {
 
     const url = `https://api.github.com/repos/${owner}/${repo}/commits`;
     try {
-      const response = await firstValueFrom(this.httpService.get(url, {
-        headers: this.headers,
-        params: { since, until }
-      }));
+      const response = await firstValueFrom(
+        this.httpService.get(url, {
+          headers: this.getHeaders(),
+          params: { since, until },
+        })
+      );
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Erro getCommits:', error.response?.data || error.message);
       throw new HttpException('Erro ao buscar commits.', HttpStatus.BAD_REQUEST);
     }
   }
@@ -59,23 +67,33 @@ export class GithubService {
   async getPullRequests(owner: string, repo: string, since?: string, until?: string, author?: string) {
     const url = `https://api.github.com/repos/${owner}/${repo}/pulls?state=all&per_page=100`;
     try {
-      const response = await firstValueFrom(this.httpService.get(url, { headers: this.headers }));
+      const response = await firstValueFrom(
+        this.httpService.get(url, { headers: this.getHeaders() })
+      );
       let data = response.data;
 
       if (since) {
         const sinceDate = new Date(since);
-        data = data.filter((item: any) => new Date(item.created_at) >= sinceDate);
+        if (!isNaN(sinceDate.getTime())) {
+          data = data.filter((item: any) => new Date(item.created_at) >= sinceDate);
+        }
       }
+
       if (until) {
-        const untilDate = new Date(`${until}T23:59:59Z`);
-        data = data.filter((item: any) => new Date(item.created_at) <= untilDate);
+        const rawUntil = until.includes('T') ? until : `${until}T23:59:59Z`;
+        const untilDate = new Date(rawUntil);
+        if (!isNaN(untilDate.getTime())) {
+          data = data.filter((item: any) => new Date(item.created_at) <= untilDate);
+        }
       }
+
       if (author) {
         data = data.filter((item: any) => item.user?.login.toLowerCase() === author.toLowerCase());
       }
 
       return data;
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Erro getPullRequests:', error.response?.data || error.message);
       throw new HttpException('Erro ao buscar Pull Requests.', HttpStatus.BAD_REQUEST);
     }
   }
@@ -83,23 +101,33 @@ export class GithubService {
   async getIssues(owner: string, repo: string, since?: string, until?: string, author?: string) {
     const url = `https://api.github.com/repos/${owner}/${repo}/issues?state=all&per_page=100`;
     try {
-      const response = await firstValueFrom(this.httpService.get(url, { headers: this.headers }));
+      const response = await firstValueFrom(
+        this.httpService.get(url, { headers: this.getHeaders() })
+      );
       let data = response.data;
 
       if (since) {
         const sinceDate = new Date(since);
-        data = data.filter((item: any) => new Date(item.created_at) >= sinceDate);
+        if (!isNaN(sinceDate.getTime())) {
+          data = data.filter((item: any) => new Date(item.created_at) >= sinceDate);
+        }
       }
+
       if (until) {
-        const untilDate = new Date(`${until}T23:59:59Z`);
-        data = data.filter((item: any) => new Date(item.created_at) <= untilDate);
+        const rawUntil = until.includes('T') ? until : `${until}T23:59:59Z`;
+        const untilDate = new Date(rawUntil);
+        if (!isNaN(untilDate.getTime())) {
+          data = data.filter((item: any) => new Date(item.created_at) <= untilDate);
+        }
       }
+
       if (author) {
         data = data.filter((item: any) => item.user?.login.toLowerCase() === author.toLowerCase());
       }
 
       return data;
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Erro getIssues:', error.response?.data || error.message);
       throw new HttpException('Erro ao buscar Issues.', HttpStatus.BAD_REQUEST);
     }
   }

@@ -28,19 +28,26 @@ export default function ActivityTabs({ repo, since, until, author }: ActivityTab
       setError(null);
 
       try {
-        let pullsUrl = `http://localhost:3000/github/${repo}/pulls`;
-        let issuesUrl = `http://localhost:3000/github/${repo}/issues`;
+        // 1. Converte as datas simples (ex: "2020-01-01") para o formato ISO completo (ex: "2020-01-01T00:00:00.000Z")
+        const formattedSince = since ? new Date(since).toISOString() : null;
+        const formattedUntil = until ? new Date(until).toISOString() : null;
 
-        const queryParams = new URLSearchParams();
-        if (since) queryParams.append("since", since);
-        if (until) queryParams.append("until", until);
-        if (author) queryParams.append("author", author);
+        // 2. Monta os parâmetros para Pull Requests (aceita 'since', 'until' e 'author')
+        const prParams = new URLSearchParams();
+        if (formattedSince) prParams.append("since", formattedSince);
+        if (formattedUntil) prParams.append("until", formattedUntil);
+        if (author) prParams.append("author", author);
 
-        const queryString = queryParams.toString();
-        if (queryString) {
-          pullsUrl += `?${queryString}`;
-          issuesUrl += `?${queryString}`;
-        }
+        // 3. Monta os parâmetros para Issues (A API do GitHub não suporta 'until' em issues)
+        const issueParams = new URLSearchParams();
+        if (formattedSince) issueParams.append("since", formattedSince);
+        if (author) issueParams.append("author", author);
+
+        const prsQueryString = prParams.toString();
+        const issuesQueryString = issueParams.toString();
+
+        let pullsUrl = `http://localhost:3000/github/${repo}/pulls${prsQueryString ? `?${prsQueryString}` : ''}`;
+        let issuesUrl = `http://localhost:3000/github/${repo}/issues${issuesQueryString ? `?${issuesQueryString}` : ''}`;
 
         const [prsRes, issuesRes] = await Promise.all([
           fetch(pullsUrl),
