@@ -5,6 +5,8 @@ import PullRequestList, { pullRequest } from "./pullRequestList";
 import IssueList, { issue } from "./issueList";
 import Toast from "./toast";
 import Spinner from "./spinner";
+import ProductivityChartProps from "./productivityChart";
+import ProductivityChart from "./productivityChart";
 
 type TabType = "prs" | "issues";
 
@@ -21,6 +23,8 @@ export default function ActivityTabs({ repo, since, until, author }: ActivityTab
   const [issues, setIssues] = useState<issue[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [chartData, setChartData] = useState<any[]>([]);
+  const [isCHartOpen, setIsChartOpen] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -86,6 +90,33 @@ export default function ActivityTabs({ repo, since, until, author }: ActivityTab
 
         setPrs(formattedPrs);
         setIssues(formattedIssues);
+        
+        const chartMap: Record<string, { date: string; prs: number; issues: number }> = {};
+        
+        prsData.forEach((pr: any) =>{
+          const date = new Date(pr.created_at).toLocaleDateString("pt-br");
+          if (!chartMap[date]) {
+            chartMap[date] = { date, prs: 0, issues: 0 };
+          }
+          chartMap[date].prs += 1;
+        });
+
+        issuesData.filter((item: any) => !item.pull_request).forEach((issue: any) => {
+          const date = new Date(issue.created_at).toLocaleDateString("pt-BR");
+          if (!chartMap[date]) {
+            chartMap[date] = { date, prs: 0, issues: 0 };
+          }
+          chartMap[date].issues += 1;
+        });
+
+        const aggregatedChartData = Object.values(chartMap).sort((a, b) => {
+          const [dayA, monthA, yearA] = a.date.split("/").map(Number);
+          const [dayB, monthB, yearB] = b.date.split("/").map(Number);
+          return new Date(yearA, monthA - 1, dayA).getTime() - new Date(yearB, monthB - 1, dayB).getTime();
+        });
+
+        setChartData(aggregatedChartData);
+
       } catch (err: any) {
         setError(err.message || "Erro ao buscar informações.");
       } finally {
@@ -113,7 +144,60 @@ export default function ActivityTabs({ repo, since, until, author }: ActivityTab
   return (
     <>
       {error && <Toast message={error} type="error" onClose={() => setError(null)} />}
-
+      <div className="flex justify-end mb-4">
+        <button onClick={() => setIsChartOpen(true)}
+          className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 rounded-lg transition-all shadow-sm cursor-pointer"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="18" y1="20" x2="18" y2="10" />
+              <line x1="12" y1="20" x2="12" y2="4" />
+              <line x1="6" y1="20" x2="6" y2="14" />
+            </svg>
+            <span>Ver gráfico de produtividade</span>
+          </button>
+      </div>
+      {isCHartOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 w-full max-w-4xl shadow-2xl relative">
+            <div className="flex items-center justify-between mb-4 border-b border-zinc-200 dark:border-zinc-800 pb-3">
+              <div>
+                <h2 className="text-xl font-bold text-zinc-900 dark:text-white"> Evolução de Produtividade </h2>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                  Métricas agrupadas de Pull Requests e Issues para <span className="font-semibold text-zinc-700 dark:zinc-300">{repo}</span>
+                </p>
+              </div>
+              <button onClick={() => setIsChartOpen(false)}
+              className="p-1.5 text-zinc-500 hover-zinc-900 dark:text-zinc-400 dark:hover:text-white rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+            <div className="mt-2">
+              <ProductivityChart data={chartData} />
+            </div>
+          </div>
+        </div>
+      )}
       <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm overflow-hidden">
         <div className="flex border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/40 px-4 pt-2">
           <button
