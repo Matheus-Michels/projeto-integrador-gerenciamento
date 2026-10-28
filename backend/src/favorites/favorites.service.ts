@@ -1,4 +1,4 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FavoriteRepository } from '../entities/favorite-repository.entity';
@@ -14,14 +14,15 @@ export class FavoritesService {
   ) {}
 
   async addFavorite(userId: string, owner: string, repo: string) {
-    let user = await this.userRepo.createQueryBuilder().getOne();
+    let user = await this.userRepo.findOneBy({ id: userId });
+    
     if (!user) {
-      user = this.userRepo.create({ name: 'Usuário Teste', email: 'teste@teste.com' });
+      user = this.userRepo.create({ id: userId, name: 'Usuário', email: `${userId}@supertokens.com` });
       await this.userRepo.save(user);
     }
 
     const existingFavorite = await this.favoriteRepo.findOne({
-      where: { owner, repo, user: { id: user.id } },
+      where: { owner, repo, user: { id: userId } },
     });
 
     if (existingFavorite) {
@@ -33,23 +34,13 @@ export class FavoritesService {
   }
 
   async getFavorites(userId: string) {
-    const user = await this.userRepo.createQueryBuilder().getOne();
-    if (!user) return [];
-
     return this.favoriteRepo.find({
-      where: { user: { id: user.id } },
+      where: { user: { id: userId } },
       order: { savedAt: 'DESC' },
     });
   }
 
-  async removeFavorite(id: string) {
-    await this.favoriteRepo.delete(id);
-  }
-
-  async removeFavoriteByRepo(owner: string, repo: string) {
-    const user = await this.userRepo.createQueryBuilder().getOne();
-    if (user) {
-      await this.favoriteRepo.delete({ owner, repo, user: { id: user.id } });
-    }
+  async removeFavoriteByRepo(userId: string, owner: string, repo: string) {
+    await this.favoriteRepo.delete({ owner, repo, user: { id: userId } });
   }
 }
