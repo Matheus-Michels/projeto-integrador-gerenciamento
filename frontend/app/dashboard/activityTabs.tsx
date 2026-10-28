@@ -7,6 +7,7 @@ import Toast from "./toast";
 import Spinner from "./spinner";
 import ProductivityChartProps from "./productivityChart";
 import ProductivityChart from "./productivityChart";
+import ContributionHeatmap from "./contributionHeatmap";
 
 type TabType = "prs" | "issues";
 
@@ -25,6 +26,7 @@ export default function ActivityTabs({ repo, since, until, author }: ActivityTab
   const [error, setError] = useState<string | null>(null);
   const [chartData, setChartData] = useState<any[]>([]);
   const [isCHartOpen, setIsChartOpen] = useState(false);
+  const [heatmapData, setHeatmapData] = useState<{ date: string; count: number }[]>([]);
 
   useEffect(() => {
     async function fetchData() {
@@ -116,6 +118,29 @@ export default function ActivityTabs({ repo, since, until, author }: ActivityTab
         });
 
         setChartData(aggregatedChartData);
+        const heatMap: Record<string, number> = {};
+        prsData.forEach((pr: any) => {
+          if (pr.created_at) {
+            const dateStr = pr.created_at.split("T")[0];
+            heatMap[dateStr] = (heatMap[dateStr] || 0) + 1;
+          }
+        });
+
+        issuesData
+          .filter((item: any) => !item.pull_request)
+          .forEach((issue: any) => {
+            if (issue.created_at) {
+              const dateStr = issue.created_at.split("T")[0];
+              heatMap[dateStr] = (heatMap[dateStr] || 0) + 1;
+            }
+          });
+
+        const formattedHeatmap = Object.entries(heatMap).map(([date, count]) => ({
+          date,
+          count,
+        }));
+
+        setHeatmapData(formattedHeatmap);
 
       } catch (err: any) {
         setError(err.message || "Erro ao buscar informações.");
@@ -144,6 +169,9 @@ export default function ActivityTabs({ repo, since, until, author }: ActivityTab
   return (
     <>
       {error && <Toast message={error} type="error" onClose={() => setError(null)} />}
+      <ContributionHeatmap values={heatmapData} />
+      <div className="flex justify-end mb-4">
+      </div>
       <div className="flex justify-end mb-4">
         <button onClick={() => setIsChartOpen(true)}
           className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 rounded-lg transition-all shadow-sm cursor-pointer"
