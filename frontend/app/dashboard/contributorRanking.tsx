@@ -19,7 +19,12 @@ interface ContributorRankingProps {
   author?: string | null;
 }
 
-export default function ContributorRanking({ repo, since, until, author }: ContributorRankingProps) {
+export default function ContributorRanking({
+  repo,
+  since,
+  until,
+  author,
+}: ContributorRankingProps) {
   const [contributors, setContributors] = useState<Contributor[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +36,7 @@ export default function ContributorRanking({ repo, since, until, author }: Contr
 
       try {
         let url = `https://api.github.com/repos/${repo}/contributors?per_page=10`;
-        
+
         const queryParams = new URLSearchParams();
         if (since) queryParams.append("since", since);
         if (until) queryParams.append("until", until);
@@ -42,14 +47,17 @@ export default function ContributorRanking({ repo, since, until, author }: Contr
           url += `&${queryString}`;
         }
 
-        const res = await fetch(url, {
-  headers: {
-    Authorization: `Bearer ${process.env.NEXT_PUBLIC_GITHUB_TOKEN}`
-  }
-});
+        const token = process.env.NEXT_PUBLIC_GITHUB_TOKEN;
+        const headers: HeadersInit = token
+          ? { Authorization: `Bearer ${token}` }
+          : {};
+
+        const res = await fetch(url, { headers });
 
         if (!res.ok) {
-          throw new Error("Não foi possível carregar o ranking de colaboradores.");
+          throw new Error(
+            "Não foi possível carregar o ranking de colaboradores.",
+          );
         }
 
         const data = await res.json();
@@ -90,7 +98,9 @@ export default function ContributorRanking({ repo, since, until, author }: Contr
 
   return (
     <>
-      {error && <Toast message={error} type="error" onClose={() => setError(null)} />}
+      {error && (
+        <Toast message={error} type="error" onClose={() => setError(null)} />
+      )}
 
       {contributors.length === 0 ? (
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 text-center text-zinc-500 dark:text-zinc-400 text-sm shadow-sm">
@@ -126,10 +136,10 @@ export default function ContributorRanking({ repo, since, until, author }: Contr
                         position === 1
                           ? "text-yellow-600 dark:text-yellow-400 font-black text-sm"
                           : position === 2
-                          ? "text-zinc-500 dark:text-zinc-400 font-bold"
-                          : position === 3
-                          ? "text-amber-700 dark:text-amber-500 font-bold"
-                          : "text-zinc-400 dark:text-zinc-500"
+                            ? "text-zinc-500 dark:text-zinc-400 font-bold"
+                            : position === 3
+                              ? "text-amber-700 dark:text-amber-500 font-bold"
+                              : "text-zinc-400 dark:text-zinc-500"
                       }`}
                     >
                       {getMedalBadge(position)}
@@ -150,7 +160,9 @@ export default function ContributorRanking({ repo, since, until, author }: Contr
                       >
                         {user.login}
                       </a>
-                      <p className="text-xs text-zinc-400">Contribuidor verificado</p>
+                      <p className="text-xs text-zinc-400">
+                        Contribuidor verificado
+                      </p>
                     </div>
                   </div>
 
@@ -158,7 +170,9 @@ export default function ContributorRanking({ repo, since, until, author }: Contr
                     <span className="text-sm font-bold text-black dark:text-white">
                       {user.contributions}
                     </span>
-                    <span className="text-xs text-zinc-500 dark:text-zinc-400 ml-1">commits</span>
+                    <span className="text-xs text-zinc-500 dark:text-zinc-400 ml-1">
+                      commits
+                    </span>
                   </div>
                 </div>
               );
