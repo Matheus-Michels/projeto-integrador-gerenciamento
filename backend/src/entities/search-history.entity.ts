@@ -7,7 +7,10 @@ export class SearchHistory {
   id: string;
 
   @Column()
-  repositoryUrl: string;
+  owner: string;
+
+  @Column()
+  repo: string;
 
   @ManyToOne(() => User)
   user: User;

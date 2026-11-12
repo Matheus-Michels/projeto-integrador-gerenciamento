@@ -1,52 +1,36 @@
+import { FavoritesProvider } from "@/components/FavoritesProvider";
+import Sidebar from "./Sidebar";
+import Link from "next/link";
+import ThemeToggle from "./themeToggle";
+
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex h-screen overflow-hidden">
-      <aside className="w-64 bg-black text-white flex flex-col hidden md:flex border-r border-zinc-800">
-        <div className="p-6 text-lg font-bold border-b border-zinc-900 uppercase tracking-widest">
-          Projeto Integrador
+    <FavoritesProvider>
+      <div className="flex h-screen overflow-hidden">
+        <Sidebar />
+
+        <div className="flex-1 flex flex-col h-screen overflow-hidden bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 transition-colors duration-200">
+          <header className="h-16 px-8 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 transition-colors duration-200">
+            <h2 className="text-sm font-bold tracking-wider text-black dark:text-white uppercase">
+              Painel de Controle
+            </h2>
+            <div className="flex items-center gap-3">
+              <ThemeToggle />
+              <Link
+                href="/login"
+                className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black text-xs font-bold rounded-md hover:bg-zinc-800 dark:hover:bg-zinc-200 transition"
+              >
+                FAZER LOGIN
+              </Link>
+            </div>
+          </header>
+          <main className="flex-1 overflow-y-auto p-8">{children}</main>
         </div>
-        <nav className="flex-1 p-4 space-y-1">
-          <a
-            href="/dashboard"
-            className="block py-3 px-4 rounded-md transition duration-200 bg-white text-black font-medium"
-          >
-            Dashboard
-          </a>
-          <a
-            href="#"
-            className="block py-3 px-4 rounded-md transition duration-200 hover:bg-zinc-900 text-zinc-400 hover:text-white"
-          >
-            Repositórios
-          </a>
-          <a
-            href="#"
-            className="block py-3 px-4 rounded-md transition duration-200 hover:bg-zinc-900 text-zinc-400 hover:text-white"
-          >
-            Configurações
-          </a>
-        </nav>
-      </aside>
-
-      <div className="flex-1 flex flex-col">
-        <header className="bg-white border-b border-zinc-200 h-20 flex items-center justify-between px-8">
-          <h2 className="text-xl font-bold uppercase tracking-tight">
-            Painel de Controle
-          </h2>
-          <div className="flex items-center">
-            <span className="text-zinc-400 text-xs uppercase tracking-widest font-semibold">
-              Usuário Conectado
-            </span>
-          </div>
-        </header>
-
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-zinc-50 p-8">
-          {children}
-        </main>
       </div>
-    </div>
+    </FavoritesProvider>
   );
 }
