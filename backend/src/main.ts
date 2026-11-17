@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule} from './app.module';
+import { AppModule } from './app.module';
 import supertokens from 'supertokens-node';
 import { middleware } from 'supertokens-node/framework/express';
 import { AuthFilter } from './auth/auth.filter';
@@ -7,10 +7,15 @@ import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule)
+  const app = await NestFactory.create(AppModule);
+
+  const allowedOrigins = ['http://localhost:3001', 'http://localhost:3000'];
+  if (process.env.FRONTEND_URL) {
+    allowedOrigins.push(process.env.FRONTEND_URL);
+  }
 
   app.enableCors({
-    origin: ['http://localhost:3001', 'http://localhost:3000'],
+    origin: allowedOrigins,
     allowedHeaders: ['content-type', ...supertokens.getAllCORSHeaders()],
     credentials: true,
   });

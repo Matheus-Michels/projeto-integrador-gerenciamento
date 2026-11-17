@@ -19,6 +19,8 @@ type FavoritesContextType = {
   removeFavorite: (owner: string, repo: string) => Promise<void>;
 };
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+
 const FavoritesContext = createContext<FavoritesContextType | null>(null);
 
 export function FavoritesProvider({ children }: { children: ReactNode }) {
@@ -31,7 +33,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
         setFavorites([]);
         return;
       }
-      const res = await fetch("http://localhost:3000/favorites", {
+      const res = await fetch(`${API_URL}/favorites`, {
         cache: "no-store",
       });
       if (res.ok) setFavorites(await res.json());
@@ -60,7 +62,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const res = await fetch("http://localhost:3000/favorites", {
+      const res = await fetch(`${API_URL}/favorites`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ owner, repo }),
@@ -78,12 +80,9 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
     );
 
     try {
-      const res = await fetch(
-        `http://localhost:3000/favorites/${owner}/${repo}`,
-        {
-          method: "DELETE",
-        },
-      );
+      const res = await fetch(`${API_URL}/favorites/${owner}/${repo}`, {
+        method: "DELETE",
+      });
       if (!res.ok) throw new Error();
     } catch (error) {
       setFavorites(previous);
