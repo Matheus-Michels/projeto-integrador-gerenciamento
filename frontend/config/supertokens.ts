@@ -7,7 +7,7 @@ export const initSuperTokens = () => {
   SuperTokens.init({
     appInfo: {
       appName: 'Gerenciamento de Atividades',
-      apiDomain: 'http://localhost:3000',
+      apiDomain: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000',
       apiBasePath: '/auth',
     },
     recipeList: [
