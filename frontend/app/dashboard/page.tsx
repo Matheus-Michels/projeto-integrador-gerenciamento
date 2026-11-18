@@ -1,22 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import ActivityTabs from "./activityTabs";
 import ContributorRanking from "./contributorRanking";
 import FavoriteButton from "./FavoriteButton";
 
-export default function DashboardPage() {
+function DashboardContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  
-  // Estados dos inputs
+
   const [repoInput, setRepoInput] = useState("");
   const [sinceInput, setSinceInput] = useState("");
   const [untilInput, setUntilInput] = useState("");
   const [authorInput, setAuthorInput] = useState("");
 
-  // Estados dos dados atuais carregados na URL
   const [currentRepo, setCurrentRepo] = useState<string | null>(null);
   const [currentSince, setCurrentSince] = useState<string | null>(null);
   const [currentUntil, setCurrentUntil] = useState<string | null>(null);
@@ -60,7 +58,6 @@ export default function DashboardPage() {
     }
   }, [searchParams]);
 
-  // Função para buscar um novo repositório (limpa os filtros antigos)
   const handleRepoSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (!repoInput.trim()) return;
@@ -68,7 +65,6 @@ export default function DashboardPage() {
     router.push(`/dashboard?repo=${repoInput.trim()}`);
   };
 
-  // Função para aplicar filtros no repositório que já está selecionado
   const handleFilterSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentRepo) return;
@@ -90,7 +86,8 @@ export default function DashboardPage() {
           Visão Geral
         </h1>
         <p className="text-zinc-500 dark:text-zinc-400 text-sm font-light mt-1">
-          Acompanhamento de pull requests, issues e atividades recentes dos repositórios conectados.
+          Acompanhamento de pull requests, issues e atividades recentes dos
+          repositórios conectados.
         </p>
       </div>
 
@@ -125,12 +122,14 @@ export default function DashboardPage() {
         <div className="space-y-6">
           <div className="flex items-center justify-between px-1">
             <p className="text-xs uppercase tracking-wider font-semibold text-zinc-500 dark:text-zinc-400">
-              Resultados para: <span className="text-black dark:text-white font-bold">{currentRepo}</span>
+              Resultados para:{" "}
+              <span className="text-black dark:text-white font-bold">
+                {currentRepo}
+              </span>
             </p>
             <FavoriteButton owner={owner} repo={repo} />
           </div>
 
-          {/* Painel de Filtros Exclusivo do Repositório Selecionado */}
           <div className="bg-white dark:bg-zinc-900 p-6 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl transition-colors duration-200">
             <form
               onSubmit={handleFilterSearch}
@@ -184,10 +183,20 @@ export default function DashboardPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
             <div className="lg:col-span-2">
-              <ActivityTabs repo={currentRepo} since={currentSince} until={currentUntil} author={currentAuthor} />
+              <ActivityTabs
+                repo={currentRepo}
+                since={currentSince}
+                until={currentUntil}
+                author={currentAuthor}
+              />
             </div>
             <div className="lg:col-span-1">
-              <ContributorRanking repo={currentRepo} since={currentSince} until={currentUntil} author={currentAuthor} />
+              <ContributorRanking
+                repo={currentRepo}
+                since={currentSince}
+                until={currentUntil}
+                author={currentAuthor}
+              />
             </div>
           </div>
         </div>
@@ -198,10 +207,25 @@ export default function DashboardPage() {
             Nenhum repositório selecionado
           </h3>
           <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-md mx-auto">
-            Digite o nome de um repositório no campo acima e clique em <strong>Buscar</strong> para carregar as Issues e Pull Requests.
+            Digite o nome de um repositório no campo acima e clique em{" "}
+            <strong>Buscar</strong> para carregar as Issues e Pull Requests.
           </p>
         </div>
       )}
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-8 text-center text-zinc-500">
+          Carregando painel...
+        </div>
+      }
+    >
+      <DashboardContent />
+    </Suspense>
   );
 }
