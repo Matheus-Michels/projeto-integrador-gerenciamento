@@ -7,8 +7,7 @@ import Toast from "./toast";
 import Spinner from "./spinner";
 import ProductivityChart from "./productivityChart";
 import ContributionHeatmap from "./contributionHeatmap";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+import { apiFetch } from "@/config/api";
 
 type TabType = "prs" | "issues";
 
@@ -57,22 +56,18 @@ export default function ActivityTabs({
         const prsQueryString = prParams.toString();
         const issuesQueryString = issueParams.toString();
 
-        const pullsUrl = `${API_URL}/github/${repo}/pulls${prsQueryString ? `?${prsQueryString}` : ""}`;
-        const issuesUrl = `${API_URL}/github/${repo}/issues${issuesQueryString ? `?${issuesQueryString}` : ""}`;
+        const pullsUrl = `/github/${repo}/pulls${prsQueryString ? `?${prsQueryString}` : ""}`;
+        const issuesUrl = `/github/${repo}/issues${issuesQueryString ? `?${issuesQueryString}` : ""}`;
 
         const [prsRes, issuesRes] = await Promise.all([
-          fetch(pullsUrl),
-          fetch(issuesUrl),
+          apiFetch(pullsUrl),
+          apiFetch(issuesUrl),
         ]);
 
-        if (!prsRes.ok || !issuesRes.ok) {
-          throw new Error(
-            "Não foi possível carregar as atividades deste repositório.",
-          );
-        }
-
-        const prsData = await prsRes.json();
-        const issuesData = await issuesRes.json();
+        const [prsData, issuesData] = await Promise.all([
+          apiFetch<any[]>(pullsUrl),
+          apiFetch<any[]>(issuesUrl),
+        ]);
 
         const formattedPrs: pullRequest[] = prsData.map((pr: any) => ({
           id: pr.id,
