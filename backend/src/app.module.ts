@@ -18,17 +18,23 @@ import { HealthController } from './health/health.controller';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get<string>('DB_HOST', 'localhost'),
-        port: configService.get<number>('DB_PORT', 5432),
-        username: configService.get<string>('DB_USER', 'root'),
-        password: configService.get<string>('DB_PASS', 'root'),
-        database: configService.get<string>('DB_NAME', 'gerenciamento_atividades'),
-        entities: [User, SearchHistory, FavoriteRepository],
-        autoLoadEntities: true,
-        synchronize: configService.get<string>('NODE_ENV') !== 'production',
-      }),
+      useFactory: (configService: ConfigService) => {
+        const dbHost = configService.get<string>('DB_HOST', 'localhost');
+        const isLocal = dbHost === 'localhost' || dbHost === '127.0.0.1';
+
+        return {
+          type: 'postgres',
+          host: dbHost,
+          port: configService.get<number>('DB_PORT', 5432),
+          username: configService.get<string>('DB_USER', 'root'),
+          password: configService.get<string>('DB_PASS', 'root'),
+          database: configService.get<string>('DB_NAME', 'gerenciamento_atividades'),
+          entities: [User, SearchHistory, FavoriteRepository],
+          autoLoadEntities: true,
+          synchronize: true,
+          ssl: isLocal ? false : { rejectUnauthorized: false },
+        };
+      },
     }),
     AuthModule,
     GithubModule,
