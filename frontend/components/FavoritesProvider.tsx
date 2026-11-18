@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import Session from "supertokens-web-js/recipe/session";
+import { apiFetch } from "@/config/api";
 
 type Favorite = { owner: string; repo: string };
 
@@ -18,8 +19,6 @@ type FavoritesContextType = {
   addFavorite: (owner: string, repo: string) => Promise<void>;
   removeFavorite: (owner: string, repo: string) => Promise<void>;
 };
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
 const FavoritesContext = createContext<FavoritesContextType | null>(null);
 
@@ -33,10 +32,8 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
         setFavorites([]);
         return;
       }
-      const res = await fetch(`${API_URL}/favorites`, {
-        cache: "no-store",
-      });
-      if (res.ok) setFavorites(await res.json());
+      const data = await apiFetch<Favorite[]>("/favorites");
+      setFavorites(data ?? []);
     } catch (error) {
       console.error(error);
     }
@@ -62,14 +59,13 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const res = await fetch(`${API_URL}/favorites`, {
+      await apiFetch("/favorites", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ owner, repo }),
       });
-      if (!res.ok && res.status !== 409) throw new Error();
     } catch (error) {
       setFavorites(previous);
+      console.error(error);
     }
   };
 
@@ -80,12 +76,12 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
     );
 
     try {
-      const res = await fetch(`${API_URL}/favorites/${owner}/${repo}`, {
+      await apiFetch(`/favorites/${owner}/${repo}`, {
         method: "DELETE",
       });
-      if (!res.ok) throw new Error();
     } catch (error) {
       setFavorites(previous);
+      console.error(error);
     }
   };
 
@@ -100,6 +96,6 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
 
 export function useFavorites() {
   const ctx = useContext(FavoritesContext);
-  if (!ctx) throw new Error();
+  if (!ctx) throw new Error("useFavorites must be used within FavoritesProvider");
   return ctx;
 }
