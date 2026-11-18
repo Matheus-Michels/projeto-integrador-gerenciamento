@@ -99,15 +99,20 @@ export class GithubService {
 
       if (since) {
         const sinceDate = new Date(since);
-        data = data.filter((item: any) => new Date(item.created_at) >= sinceDate);
+        if (!isNaN(sinceDate.getTime())) {
+          data = data.filter((item: any) => new Date(item.created_at) >= sinceDate);
+        }
       }
       if (until) {
-        const untilDate = new Date(`${until}T23:59:59Z`);
-        data = data.filter((item: any) => new Date(item.created_at) <= untilDate);
+        const untilStr = until.includes('T') ? until.split('T')[0] : until;
+        const untilDate = new Date(`${untilStr}T23:59:59.999Z`);
+        if (!isNaN(untilDate.getTime())) {
+          data = data.filter((item: any) => new Date(item.created_at) <= untilDate);
+        }
       }
       if (author) {
         data = data.filter(
-          (item: any) => item.user?.login.toLowerCase() === author.toLowerCase(),
+          (item: any) => item.user?.login?.toLowerCase() === author.toLowerCase(),
         );
       }
 
@@ -133,15 +138,20 @@ export class GithubService {
 
       if (since) {
         const sinceDate = new Date(since);
-        data = data.filter((item: any) => new Date(item.created_at) >= sinceDate);
+        if (!isNaN(sinceDate.getTime())) {
+          data = data.filter((item: any) => new Date(item.created_at) >= sinceDate);
+        }
       }
       if (until) {
-        const untilDate = new Date(`${until}T23:59:59Z`);
-        data = data.filter((item: any) => new Date(item.created_at) <= untilDate);
+        const untilStr = until.includes('T') ? until.split('T')[0] : until;
+        const untilDate = new Date(`${untilStr}T23:59:59.999Z`);
+        if (!isNaN(untilDate.getTime())) {
+          data = data.filter((item: any) => new Date(item.created_at) <= untilDate);
+        }
       }
       if (author) {
         data = data.filter(
-          (item: any) => item.user?.login.toLowerCase() === author.toLowerCase(),
+          (item: any) => item.user?.login?.toLowerCase() === author.toLowerCase(),
         );
       }
 
