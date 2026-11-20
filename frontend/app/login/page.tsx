@@ -67,7 +67,7 @@ export default function AuthPage() {
     try {
       const authUrl = await getAuthorisationURLWithQueryParamsAndSetState({
         thirdPartyId: "github",
-        frontendRedirectURI: "http://localhost:3001/auth/callback/github",
+        frontendRedirectURI: `${window.location.origin}/auth/callback/github`,
       });
       window.location.assign(authUrl);
     } catch (err: any) {
