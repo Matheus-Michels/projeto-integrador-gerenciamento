@@ -17,6 +17,7 @@ async function bootstrap() {
   app.enableCors({
     origin: allowedOrigins,
     allowedHeaders: ['content-type', ...supertokens.getAllCORSHeaders()],
+    exposedHeaders: ['front-token', 'st-access-token', 'st-refresh-token', 'anti-csrf'],
     credentials: true,
   });
 
