@@ -9,7 +9,8 @@ import {
   type ReactNode,
 } from "react";
 import Session from "supertokens-web-js/recipe/session";
-import { apiFetch } from "@/config/api";
+import { apiFetch, ApiError } from "@/config/api";
+import Toast from "@/app/dashboard/toast";
 
 type Favorite = { owner: string; repo: string };
 
@@ -24,6 +25,7 @@ const FavoritesContext = createContext<FavoritesContextType | null>(null);
 
 export function FavoritesProvider({ children }: { children: ReactNode }) {
   const [favorites, setFavorites] = useState<Favorite[]>([]);
+  const [toast, setToast] = useState<{ message: string; type: "error" | "success" } | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -35,8 +37,13 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
       const data = await apiFetch<Favorite[]>("/favorites");
       setFavorites(data ?? []);
     } catch (error) {
-      console.error(error);
-    }
+      if (error instanceof ApiError && error.status === 401) return;
+        console.error(error);
+        setToast({
+          message: error instanceof ApiError ? error.message : "Não foi possível carregar seus favoritos.",
+          type: "error",
+        });
+      }
   }, []);
 
   useEffect(() => {
@@ -65,7 +72,10 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
       });
     } catch (error) {
       setFavorites(previous);
-      console.error(error);
+      setToast({
+        message: error instanceof ApiError ? error.message : "Não foi possível atualizar os favoritos.",
+        type: "error",
+      });
     }
   };
 
@@ -90,6 +100,13 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
       value={{ favorites, isFavorited, addFavorite, removeFavorite }}
     >
       {children}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </FavoritesContext.Provider>
   );
 }

@@ -58,12 +58,7 @@ export default function ActivityTabs({
 
         const pullsUrl = `/github/${repo}/pulls${prsQueryString ? `?${prsQueryString}` : ""}`;
         const issuesUrl = `/github/${repo}/issues${issuesQueryString ? `?${issuesQueryString}` : ""}`;
-
-        const [prsRes, issuesRes] = await Promise.all([
-          apiFetch(pullsUrl),
-          apiFetch(issuesUrl),
-        ]);
-
+        
         const [prsData, issuesData] = await Promise.all([
           apiFetch<any[]>(pullsUrl),
           apiFetch<any[]>(issuesUrl),
