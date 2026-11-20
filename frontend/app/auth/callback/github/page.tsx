@@ -1,12 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { signInAndUp } from "supertokens-web-js/recipe/thirdparty";
 
 export default function GitHubCallbackPage() {
   const [error, setError] = useState<string | null>(null);
+  const hasCalled = useRef(false);
 
   useEffect(() => {
+    if (hasCalled.current) return;
+    hasCalled.current = true;
+
     const handleCallback = async () => {
       try {
         const response = await signInAndUp();
