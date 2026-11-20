@@ -7,10 +7,15 @@ import EmailPassword from 'supertokens-node/recipe/emailpassword';
 @Injectable()
 export class SupertokensService {
   constructor() {
+    const isProduction = process.env.NODE_ENV === 'production';
+
     supertokens.init({
       framework: 'express',
       supertokens: {
         connectionURI: process.env.SUPERTOKENS_URI || 'http://localhost:3567',
+        ...(process.env.SUPERTOKENS_API_KEY
+          ? { apiKey: process.env.SUPERTOKENS_API_KEY }
+          : {}),
       },
       appInfo: {
         appName: 'Gerenciamento de Atividades',
@@ -19,8 +24,8 @@ export class SupertokensService {
         apiBasePath: '/auth',
         websiteBasePath: '/auth',
       },
-        recipeList: [
-            EmailPassword.init(),
+      recipeList: [
+        EmailPassword.init(),
         ThirdParty.init({
           signInAndUpFeature: {
             providers: [
@@ -38,7 +43,10 @@ export class SupertokensService {
             ],
           },
         }),
-        Session.init(),
+        Session.init({
+          cookieSameSite: isProduction ? 'none' : 'lax',
+          cookieSecure: isProduction,
+        }),
       ],
     });
   }
