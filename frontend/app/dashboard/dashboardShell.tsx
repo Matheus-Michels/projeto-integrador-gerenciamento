@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import Session from "supertokens-web-js/recipe/session";
 import Sidebar from "./Sidebar";
 import ThemeToggle from "./themeToggle";
 
@@ -11,6 +12,24 @@ export default function DashboardShell({
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    async function checkSession() {
+      try {
+        const loggedIn = await Session.doesSessionExist();
+        setIsLoggedIn(loggedIn);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    checkSession();
+  }, []);
+
+  const handleLogout = async () => {
+    await Session.signOut();
+    window.location.href = "/login";
+  };
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -32,12 +51,21 @@ export default function DashboardShell({
           </div>
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <ThemeToggle />
-            <Link
-              href="/login"
-              className="px-3 sm:px-4 py-2 bg-black dark:bg-white text-white dark:text-black text-xs font-bold rounded-md hover:bg-zinc-800 dark:hover:bg-zinc-200 transition whitespace-nowrap"
-            >
-              FAZER LOGIN
-            </Link>
+            {isLoggedIn ? (
+              <button
+                onClick={handleLogout}
+                className="px-3 sm:px-4 py-2 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 text-xs font-bold rounded-md hover:bg-red-100 dark:hover:bg-red-900/60 transition cursor-pointer whitespace-nowrap"
+              >
+                SAIR DA CONTA
+              </button>
+            ) : (
+              <Link
+                href="/login"
+                className="px-3 sm:px-4 py-2 bg-black dark:bg-white text-white dark:text-black text-xs font-bold rounded-md hover:bg-zinc-800 dark:hover:bg-zinc-200 transition whitespace-nowrap"
+              >
+                FAZER LOGIN
+              </Link>
+            )}
           </div>
         </header>
         <main className="flex-1 overflow-y-auto p-4 md:p-8">{children}</main>
