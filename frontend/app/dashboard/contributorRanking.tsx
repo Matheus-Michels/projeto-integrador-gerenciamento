@@ -35,17 +35,7 @@ export default function ContributorRanking({
       setError(null);
 
       try {
-        let url = `https://api.github.com/repos/${repo}/contributors?per_page=10`;
-
-        const queryParams = new URLSearchParams();
-        if (since) queryParams.append("since", since);
-        if (until) queryParams.append("until", until);
-        if (author) queryParams.append("author", author);
-
-        const queryString = queryParams.toString();
-        if (queryString) {
-          url += `&${queryString}`;
-        }
+        const url = `https://api.github.com/repos/${repo}/contributors?per_page=10`;
 
         const token = process.env.NEXT_PUBLIC_GITHUB_TOKEN;
         const headers: HeadersInit = token
@@ -55,15 +45,26 @@ export default function ContributorRanking({
         const res = await fetch(url, { headers });
 
         if (!res.ok) {
-          throw new Error(
-            "Não foi possível carregar o ranking de colaboradores.",
-          );
+          if (res.status === 403 || res.status === 429) {
+            throw new Error(
+              "Limite de requisições do GitHub atingido. Tente novamente em alguns minutos.",
+            );
+          }
+          if (res.status === 404) {
+            throw new Error("Repositório não encontrado.");
+          }
+          throw new Error("Não foi possível carregar o ranking de colaboradores.");
         }
 
         const data = await res.json();
         setContributors(data);
       } catch (err: any) {
-        setError(err.message || "Erro ao carregar colaboradores.");
+        setContributors([]);
+        setError(
+          err instanceof TypeError
+            ? "Sem conexão com o GitHub. Verifique sua internet e tente de novo."
+            : err.message || "Erro ao carregar colaboradores.",
+        );
       } finally {
         setLoading(false);
       }
@@ -72,7 +73,7 @@ export default function ContributorRanking({
     if (repo) {
       fetchContributors();
     }
-  }, [repo, since, until, author]);
+  }, [repo]);
 
   const getMedalBadge = (position: number) => {
     switch (position) {

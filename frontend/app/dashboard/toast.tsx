@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 
 interface ToastProps {
     message: string;
@@ -15,13 +15,17 @@ export default function Toast({
     onClose,
     duration = 4000,
 }: ToastProps) {
+    const onCloseRef = useRef(onClose);
+    useEffect(() => {
+            onCloseRef.current = onClose;
+    }, [onClose]);
+
     useEffect(() => {
         const timer = setTimeout(() => {
-            onClose();
+            onCloseRef.current();
         }, duration);
-
         return () => clearTimeout(timer);
-    }, [onClose, duration]);
+    }, [message, duration]);
 
     const borderColors = {
         success: "border-emerald-500/30 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/80 dark:border-emerald-800 dark:text-emerald-200",
