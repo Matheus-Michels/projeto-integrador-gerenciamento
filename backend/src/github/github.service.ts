@@ -23,6 +23,30 @@ export class GithubService {
     return token ? { Authorization: `Bearer ${token}` } : {};
   }
 
+  private async fetchAllPages(
+    url: string,
+    params: Record<string, any> = {},
+  ): Promise<any[]> {
+    const perPage = 100;
+    const maxPages = 10;
+    const all: any[] = [];
+
+    for (let page = 1; page <= maxPages; page++) {
+      const response = await firstValueFrom(
+        this.httpService.get(url, {
+          headers: this.getHeaders(),
+          params: { ...params, per_page: perPage, page },
+        }),
+      );
+      const items = response.data;
+      all.push(...items);
+
+      if (items.length < perPage) break;
+    }
+
+    return all;
+  }
+
   private handleGithubError(error: any, defaultMessage: string): never {
     const status = error?.response?.status || HttpStatus.BAD_REQUEST;
     if (status === 403 || status === 429) {
@@ -90,12 +114,9 @@ export class GithubService {
     until?: string,
     author?: string,
   ) {
-    const url = `https://api.github.com/repos/${owner}/${repo}/pulls?state=all&per_page=100`;
+    const url = `https://api.github.com/repos/${owner}/${repo}/pulls`;
     try {
-      const response = await firstValueFrom(
-        this.httpService.get(url, { headers: this.getHeaders() }),
-      );
-      let data = response.data;
+      let data = await this.fetchAllPages(url, { state: 'all'});
 
       if (since) {
         const sinceDate = new Date(since);
@@ -129,12 +150,9 @@ export class GithubService {
     until?: string,
     author?: string,
   ) {
-    const url = `https://api.github.com/repos/${owner}/${repo}/issues?state=all&per_page=100`;
+    const url = `https://api.github.com/repos/${owner}/${repo}/issues`;
     try {
-      const response = await firstValueFrom(
-        this.httpService.get(url, { headers: this.getHeaders() }),
-      );
-      let data = response.data;
+      let data = await this.fetchAllPages(url, { state: 'all' });
 
       if (since) {
         const sinceDate = new Date(since);

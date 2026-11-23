@@ -14,7 +14,8 @@ interface ContributionHeatmapProps {
 }
 
 export default function ContributionHeatmap({ values, endDate = new Date() }: ContributionHeatmapProps) {
-  const startDate = new Date();
+  const end = endDate ?? new Date();
+  const startDate = new Date(end);
   startDate.setMonth(startDate.getMonth() - 6);
 
   return (
@@ -24,10 +25,20 @@ export default function ContributionHeatmap({ values, endDate = new Date() }: Co
       </h3>
       
       <div className="heatmap-container overflow-x-auto pb-2">
+        {values.length === 0 && (
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-2">
+            Nenhuma contribuição no período.
+          </p>
+        )}
         <CalendarHeatmap
           startDate={startDate}
           endDate={endDate}
           values={values}
+          titleForValue={(value) =>
+            value && value.count > 0
+              ? `${value.count} contribuição(ões) em ${new Date(value.date + "T00:00:00").toLocaleDateString("pt-BR")}`
+              : "Sem contribuições"
+          }
           classForValue={(value) => {
             if (!value || value.count === 0) {
               return "color-empty";
@@ -39,6 +50,25 @@ export default function ContributionHeatmap({ values, endDate = new Date() }: Co
           }}
           showWeekdayLabels={true}
         />
+      </div>
+      <div className="flex items-center justify-end gap-1.5 mt-3 text-xs text-zinc-500 dark:text-zinc-400">
+        <span>Menos</span>
+        <svg width="12" height="12" className="react-calendar-heatmap">
+          <rect width="12" height="12" className="color-empty" />
+        </svg>
+        <svg width="12" height="12" className="react-calendar-heatmap">
+          <rect width="12" height="12" className="color-scale-1" />
+        </svg>
+        <svg width="12" height="12" className="react-calendar-heatmap">
+          <rect width="12" height="12" className="color-scale-2" />
+        </svg>
+        <svg width="12" height="12" className="react-calendar-heatmap">
+          <rect width="12" height="12" className="color-scale-3" />
+        </svg>
+        <svg width="12" height="12" className="react-calendar-heatmap">
+          <rect width="12" height="12" className="color-scale-4" />
+        </svg>
+        <span>Mais</span>
       </div>
       <style jsx global>{`
         .react-calendar-heatmap .color-empty {
