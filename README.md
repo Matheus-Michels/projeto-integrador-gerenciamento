@@ -67,7 +67,7 @@ docker-compose up -d
 ## Equipe
 
 - **Matheus Vinicius Faria Michels**
-- **Thales**
+- **Thales Natan De Oliveira Nascimento**
 
 ## Licença
 
