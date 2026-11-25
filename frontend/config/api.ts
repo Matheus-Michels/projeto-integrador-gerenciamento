@@ -39,9 +39,9 @@ export async function apiFetch<T = any>(
 
     if (res.status === 204) return null as T;
 
-    return await res.json();
+    const text = await res.text();
+    return text ? (JSON.parse(text) as T) : (null as T);
   } catch (error: any) {
-    // Erro de rede / CORS / backend offline
     if (
       error instanceof TypeError ||
       error.message?.includes("Failed to fetch") ||
