@@ -75,11 +75,11 @@ export default function Sidebar({ open = false, onClose }: SidebarProps) {
 
           <div className="pt-6">
             <Link
-              href="/dashboard/configuracoes"
+              href="/dashboard/sobre-nos"
               onClick={onClose}
               className="block py-2.5 px-4 rounded text-sm text-zinc-400 hover:text-white hover:bg-zinc-900 transition"
             >
-              Configurações
+              Sobre nós
             </Link>
           </div>
         </nav>
